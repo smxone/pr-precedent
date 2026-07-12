@@ -1,0 +1,16 @@
+{
+  "action": "opened",
+  "number": 2,
+  "pull_request": {
+    "number": 2,
+    "title": "feat: add LLM integration and core API routes",
+    "html_url": "https://github.com/smxone/reviseflow-ai/pull/2"
+  },
+  "repository": {
+    "full_name": "smxone/reviseflow-ai",
+    "name": "reviseflow-ai",
+    "owner": {
+      "login": "smxone"
+    }
+  }
+}

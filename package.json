@@ -14,7 +14,9 @@
     "cli": "tsx src/cli/index.ts",
     "test": "vitest run",
     "smoke:github": "tsx scripts/smoke-test-github.ts",
-    "smoke:supermemory": "tsx scripts/smoke-test-supermemory.ts"
+    "smoke:supermemory": "tsx scripts/smoke-test-supermemory.ts",
+    "spike:matching": "tsx scripts/phase1-matching-spike.ts",
+    "replay": "tsx scripts/replay-webhook.ts"
   },
   "repository": {
     "type": "git",

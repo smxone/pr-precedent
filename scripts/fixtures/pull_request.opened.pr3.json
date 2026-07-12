@@ -1,0 +1,16 @@
+{
+  "action": "opened",
+  "number": 3,
+  "pull_request": {
+    "number": 3,
+    "title": "Feat/core UI components",
+    "html_url": "https://github.com/smxone/reviseflow-ai/pull/3"
+  },
+  "repository": {
+    "full_name": "smxone/reviseflow-ai",
+    "name": "reviseflow-ai",
+    "owner": {
+      "login": "smxone"
+    }
+  }
+}

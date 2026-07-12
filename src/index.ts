@@ -1,6 +1,7 @@
 import express from "express";
 import { config } from "./lib/config.js";
 import { supermemory } from "./lib/supermemory.js";
+import { webhookMiddleware } from "./webhooks/index.js";
 
 async function main() {
   try {
@@ -11,13 +12,16 @@ async function main() {
   }
 
   const app = express();
-  app.use(express.json());
 
   app.get("/healthz", (_req, res) => {
     res.status(200).json({ ok: true });
   });
 
-  // Webhook routes (ingestion + surfacing) land here in Phase 2/3 — see docs/TASKS.md.
+  // Reads the raw request body itself for signature verification — must not sit
+  // behind express.json() (that would consume the stream before verification runs).
+  app.use(webhookMiddleware);
+
+  // Surfacing route (opened/synchronize) lands here in Phase 3 — see docs/TASKS.md.
 
   app.listen(config.port, () => {
     console.log(`[startup] Precedent webhook receiver listening on :${config.port}`);
