@@ -1,0 +1,16 @@
+node_modules
+
+dist
+
+.env
+
+*.pem
+
+.DS_Store
+
+secrets/
+
+docs/
+CLAUDE.md
+IMPLEMENTATION_SPEC.md
+PRD.md
