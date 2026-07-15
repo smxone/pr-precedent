@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Precedent — Memory Timeline</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-elev: #12151c;
+    --border: #23283330;
+    --border-strong: #2a3040;
+    --text: #e8eaf0;
+    --text-dim: #8b93a7;
+    --text-faint: #565f75;
+    --accent-captured: #7c9eff;
+    --accent-captured-bg: #7c9eff14;
+    --accent-surfaced: #6ee7b7;
+    --accent-surfaced-bg: #6ee7b714;
+    --radius: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header { margin-bottom: 40px; }
+  .brand { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .brand .mark { font-size: 22px; }
+  h1 { font-size: 20px; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+  .tagline { color: var(--text-dim); font-size: 13.5px; margin: 0 0 28px; }
+
+  .controls {
+    display: flex; gap: 8px; align-items: center;
+    background: var(--bg-elev); border: 1px solid var(--border-strong);
+    border-radius: var(--radius); padding: 6px; margin-bottom: 24px;
+  }
+  .controls input {
+    flex: 1; background: transparent; border: none; color: var(--text);
+    font-size: 13.5px; padding: 8px 10px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    outline: none;
+  }
+  .controls input::placeholder { color: var(--text-faint); }
+  .controls button {
+    background: var(--text); color: var(--bg); border: none; border-radius: 7px;
+    padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .controls button:hover { opacity: 0.88; }
+  .controls button:disabled { opacity: 0.4; cursor: default; }
+
+  .stats { display: flex; gap: 10px; margin-bottom: 36px; }
+  .stat {
+    flex: 1; background: var(--bg-elev); border: 1px solid var(--border-strong);
+    border-radius: var(--radius); padding: 14px 16px;
+  }
+  .stat .n { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .stat .l { font-size: 11.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+  .stat.captured .n { color: var(--accent-captured); }
+  .stat.surfaced .n { color: var(--accent-surfaced); }
+
+  .empty, .error, .loading {
+    text-align: center; color: var(--text-dim); padding: 60px 20px; font-size: 13.5px;
+  }
+  .error { color: #f38ba8; }
+
+  .timeline { position: relative; padding-left: 26px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 7px; top: 6px; bottom: 6px;
+    width: 1px; background: linear-gradient(var(--border-strong), transparent 96%);
+  }
+
+  .event { position: relative; margin-bottom: 14px; }
+  .event::before {
+    content: ""; position: absolute; left: -26px; top: 17px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--text-faint);
+  }
+  .event.captured::before { border-color: var(--accent-captured); }
+  .event.surfaced::before { border-color: var(--accent-surfaced); }
+
+  .card {
+    background: var(--bg-elev); border: 1px solid var(--border-strong);
+    border-radius: var(--radius); padding: 14px 16px; transition: border-color 0.15s;
+  }
+  .card.highlight { border-color: var(--accent-captured); }
+
+  .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 11px; font-weight: 650; padding: 2.5px 8px; border-radius: 100px;
+    letter-spacing: 0.01em;
+  }
+  .badge.captured { background: var(--accent-captured-bg); color: var(--accent-captured); }
+  .badge.surfaced { background: var(--accent-surfaced-bg); color: var(--accent-surfaced); }
+  .badge.type { background: #ffffff0d; color: var(--text-dim); }
+  .card-top a.pr { color: var(--text); font-size: 13px; font-weight: 600; text-decoration: none; }
+  .card-top a.pr:hover { text-decoration: underline; }
+  .ts { margin-left: auto; font-size: 11.5px; color: var(--text-faint); white-space: nowrap; }
+
+  .path {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    color: var(--text-dim); margin-bottom: 6px;
+  }
+  .excerpt { font-size: 13.5px; line-height: 1.5; color: var(--text); }
+  .excerpt.dim { color: var(--text-dim); }
+
+  .rel {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+    font-size: 12.5px; color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+  }
+  .rel .arrow { color: var(--text-faint); }
+  .rel a { color: var(--accent-surfaced); text-decoration: none; font-weight: 600; }
+  .rel a:hover { text-decoration: underline; }
+  .rel button.locate {
+    margin-left: auto; background: none; border: 1px solid var(--border-strong); color: var(--text-dim);
+    font-size: 11px; padding: 3px 9px; border-radius: 100px; cursor: pointer;
+  }
+  .rel button.locate:hover { color: var(--text); border-color: var(--text-dim); }
+
+  .viewtabs { display: flex; gap: 4px; margin-bottom: 18px; }
+  .viewtabs button {
+    background: none; border: 1px solid var(--border-strong); color: var(--text-dim);
+    font-size: 12.5px; font-weight: 600; padding: 6px 13px; border-radius: 100px; cursor: pointer;
+  }
+  .viewtabs button:hover { color: var(--text); }
+  .viewtabs button.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .groups { display: flex; flex-direction: column; gap: 14px; }
+  .group-card {
+    background: var(--bg-elev); border: 1px solid var(--border-strong);
+    border-radius: var(--radius); padding: 14px 16px;
+  }
+  .reuse-count {
+    font-size: 11px; font-weight: 650; padding: 2.5px 8px; border-radius: 100px;
+    background: #ffffff0d; color: var(--text-dim);
+  }
+  .reuse-count.hot { background: var(--accent-surfaced-bg); color: var(--accent-surfaced); }
+  .reused-list {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 7px;
+  }
+  .reused-item {
+    display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-dim);
+  }
+  .reused-item .dot { color: var(--accent-surfaced); font-size: 10px; }
+  .reused-item a { color: var(--text); text-decoration: none; font-weight: 600; }
+  .reused-item a:hover { text-decoration: underline; }
+  .reused-item .file { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--text-faint); }
+  .reused-item .ts { margin-left: auto; color: var(--text-faint); white-space: nowrap; }
+  .no-reuse { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-faint); }
+
+  .inspector { display: flex; flex-direction: column; gap: 14px; }
+  .inspect-form { display: flex; gap: 8px; padding: 14px; background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: var(--radius); }
+  .inspect-form input { flex: 1; min-width: 0; background: #0b0d12; border: 1px solid var(--border-strong); color: var(--text); border-radius: 7px; padding: 9px 11px; font-size: 13px; }
+  .inspect-form button { background: var(--text); color: var(--bg); border: none; border-radius: 7px; padding: 9px 16px; font-size: 13px; font-weight: 650; cursor: pointer; }
+  .inspect-form button:disabled { opacity: .4; cursor: default; }
+  .decision { border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 18px; background: var(--bg-elev); }
+  .decision.surface { border-color: #6ee7b766; }
+  .decision.silent { border-color: #f9c56a55; }
+  .decision-title { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
+  .decision.surface .decision-title { color: var(--accent-surfaced); }
+  .decision.silent .decision-title { color: #f9c56a; }
+  .decision-meta { color: var(--text-dim); font-size: 12.5px; line-height: 1.5; }
+  .candidate { background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 14px 16px; }
+  .candidate-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .rank { color: var(--text-faint); font-size: 12px; font-weight: 650; }
+  .score { margin-left: auto; color: var(--accent-surfaced); font: 650 12px ui-monospace, monospace; }
+  .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .pipeline div { background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: 8px; padding: 10px; font-size: 11.5px; color: var(--text-dim); }
+  .pipeline strong { display: block; color: var(--text); margin-top: 3px; font-size: 13px; }
+  .warning { color: #f9c56a; font-size: 12px; padding: 10px 12px; border: 1px solid #f9c56a33; border-radius: 8px; }
+  .query-evidence { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .query-evidence summary { cursor: pointer; color: var(--text-dim); font-size: 12px; font-weight: 650; }
+  .query-evidence pre { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-dim); background: var(--bg); border-radius: 7px; padding: 10px; font-size: 11px; line-height: 1.45; }
+  .skip-list { color: var(--text-dim); font-size: 12px; line-height: 1.6; }
+
+  footer { margin-top: 48px; text-align: center; color: var(--text-faint); font-size: 11.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="mark">🔍</span><h1>Precedent</h1></div>
+    <p class="tagline">Every captured decision, every surfaced precedent — in one timeline.</p>
+    <div class="controls">
+      <input id="repoInput" type="text" placeholder="owner/repo" />
+      <button id="loadBtn">Load</button>
+    </div>
+    <div class="stats">
+      <div class="stat captured"><div class="n" id="statCaptured">–</div><div class="l">Captured</div></div>
+      <div class="stat surfaced"><div class="n" id="statSurfaced">–</div><div class="l">Surfaced</div></div>
+    </div>
+    <div class="viewtabs">
+      <button id="tabGrouped" class="active" data-view="grouped">By precedent</button>
+      <button id="tabChrono" data-view="chrono">Chronological</button>
+      <button id="tabInspector" data-view="inspector">Retrieval inspector</button>
+    </div>
+  </header>
+
+  <div id="content"></div>
+  <footer>Read-only — reflects live Supermemory Local + GitHub state. Nothing here writes.</footer>
+</div>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+const repoInput = $("#repoInput");
+const loadBtn = $("#loadBtn");
+const content = $("#content");
+const statCaptured = $("#statCaptured");
+const statSurfaced = $("#statSurfaced");
+const tabGrouped = $("#tabGrouped");
+const tabChrono = $("#tabChrono");
+const tabInspector = $("#tabInspector");
+
+let lastData = null;
+let view = localStorage.getItem("precedent-dashboard-view") || "grouped";
+
+function timeAgo(iso) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + "m ago";
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + "h ago";
+  const days = Math.floor(hrs / 24);
+  return days + "d ago";
+}
+
+function esc(s) {
+  return (s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function renderCaptured(ev) {
+  const prLink = ev.sourceUrl
+    ? `<a class="pr" href="${esc(ev.sourceUrl)}" target="_blank" rel="noopener">PR #${ev.prNumber}</a>`
+    : `<span class="pr">PR #${ev.prNumber ?? "?"}</span>`;
+  return `
+    <div class="event captured" data-pr="${ev.prNumber}">
+      <div class="card" id="captured-${esc(ev.id)}">
+        <div class="card-top">
+          <span class="badge captured">🧠 captured</span>
+          ${prLink}
+          ${ev.decisionType ? `<span class="badge type">${esc(ev.decisionType)}</span>` : ""}
+          <span class="ts">${timeAgo(ev.timestamp)}</span>
+        </div>
+        ${ev.filePath ? `<div class="path">${esc(ev.filePath)}</div>` : ""}
+        <div class="excerpt">${esc(ev.excerpt)}</div>
+      </div>
+    </div>`;
+}
+
+function renderSurfaced(ev) {
+  // Anchor id is the memory's unique documentId, not the PR number — a PR can have
+  // multiple captured memories, so "PR #N" alone can't uniquely locate the right card.
+  const anchorId = ev.sourceDocId || (ev.sourcePrNumber != null ? "pr-" + ev.sourcePrNumber : null);
+  const rel = ev.sourcePrNumber
+    ? `<div class="rel"><span>cites</span><span class="arrow">→</span><a href="#captured-${esc(anchorId)}">PR #${ev.sourcePrNumber}</a><button class="locate" data-locate-btn="${esc(anchorId)}">show precedent</button></div>`
+    : "";
+  return `
+    <div class="event surfaced">
+      <div class="card">
+        <div class="card-top">
+          <span class="badge surfaced">🔍 surfaced</span>
+          <a class="pr" href="${esc(ev.triggerPrUrl)}" target="_blank" rel="noopener">PR #${ev.triggerPrNumber}</a>
+          <span class="ts">${timeAgo(ev.timestamp)}</span>
+        </div>
+        <div class="excerpt dim">${esc(ev.triggerPrTitle)}${ev.triggeredBy ? ` — <span style="font-family:ui-monospace,monospace">${esc(ev.triggeredBy)}</span>` : ""}${ev.matchScore != null ? ` · Supermemory match ${Number(ev.matchScore).toFixed(2)}` : ""}${ev.helpfulReactions || ev.unhelpfulReactions ? ` · feedback 👍 ${ev.helpfulReactions} / 👎 ${ev.unhelpfulReactions}` : ""}</div>
+        ${rel}
+      </div>
+    </div>`;
+}
+
+function renderChrono(data) {
+  const html = data.events.map((ev) => (ev.kind === "captured" ? renderCaptured(ev) : renderSurfaced(ev))).join("");
+  content.innerHTML = `<div class="timeline">${html}</div>`;
+  wireLocateButtons();
+}
+
+// Groups every captured decision with the PRs that cited it, sorted by reuse count
+// descending — the leverage story ("one decision, reused N times") is the point of
+// the product, so the most-reused precedent should surface first, not just the newest.
+//
+// Matches citations to a captured memory by sourceDocId (unique per memory) — NOT by
+// sourcePrNumber. A single PR can have multiple review comments each captured as
+// separate memories; matching by PR number alone wrongly attributed a citation to
+// every memory from that PR, not just the one actually cited (caught 2026-07-12).
+// Legacy comments posted before this fix carry no sourceDocId — only fall back to
+// PR-number matching for those when it's unambiguous (exactly one captured memory
+// for that PR); otherwise we don't guess, matching the product's own
+// silence-over-a-bad-guess principle used everywhere else.
+function renderGrouped(data) {
+  const citationsByDocId = new Map();
+  const legacyByPr = new Map();
+  for (const ev of data.surfaced) {
+    if (ev.sourceDocId) {
+      if (!citationsByDocId.has(ev.sourceDocId)) citationsByDocId.set(ev.sourceDocId, []);
+      citationsByDocId.get(ev.sourceDocId).push(ev);
+    } else if (ev.sourcePrNumber != null) {
+      if (!legacyByPr.has(ev.sourcePrNumber)) legacyByPr.set(ev.sourcePrNumber, []);
+      legacyByPr.get(ev.sourcePrNumber).push(ev);
+    }
+  }
+
+  const capturedCountByPr = new Map();
+  for (const cap of data.captured) {
+    capturedCountByPr.set(cap.prNumber, (capturedCountByPr.get(cap.prNumber) || 0) + 1);
+  }
+
+  const groups = data.captured
+    .map((cap) => {
+      const direct = citationsByDocId.get(cap.id) || [];
+      const legacyUnambiguous = capturedCountByPr.get(cap.prNumber) === 1 ? (legacyByPr.get(cap.prNumber) || []) : [];
+      const citations = [...direct, ...legacyUnambiguous].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      return { cap, citations };
+    })
+    .sort((a, b) => b.citations.length - a.citations.length || new Date(b.cap.timestamp) - new Date(a.cap.timestamp));
+
+  const html = groups.map(({ cap, citations }) => {
+    const prLink = cap.sourceUrl
+      ? `<a class="pr" href="${esc(cap.sourceUrl)}" target="_blank" rel="noopener">PR #${cap.prNumber}</a>`
+      : `<span class="pr">PR #${cap.prNumber ?? "?"}</span>`;
+    const countBadge = citations.length > 0
+      ? `<span class="reuse-count hot">reused ${citations.length}×</span>`
+      : `<span class="reuse-count">not yet reused</span>`;
+    const reusedHtml = citations.length > 0
+      ? `<div class="reused-list">${citations.map((c) => `
+          <div class="reused-item">
+            <span class="dot">●</span>
+            <a href="${esc(c.commentUrl)}" target="_blank" rel="noopener">PR #${c.triggerPrNumber}</a>
+            ${c.triggeredBy ? `<span class="file">${esc(c.triggeredBy)}</span>` : ""}
+            <span class="ts">${timeAgo(c.timestamp)}</span>
+          </div>`).join("")}</div>`
+      : `<div class="no-reuse">Not yet cited by another PR.</div>`;
+
+    return `
+      <div class="group-card" id="captured-${esc(cap.id)}">
+        <div class="card-top">
+          <span class="badge captured">🧠 captured</span>
+          ${prLink}
+          ${cap.decisionType ? `<span class="badge type">${esc(cap.decisionType)}</span>` : ""}
+          ${countBadge}
+          <span class="ts">${timeAgo(cap.timestamp)}</span>
+        </div>
+        ${cap.filePath ? `<div class="path">${esc(cap.filePath)}</div>` : ""}
+        <div class="excerpt">${esc(cap.excerpt)}</div>
+        ${reusedHtml}
+      </div>`;
+  }).join("");
+
+  content.innerHTML = `<div class="groups">${html}</div>`;
+}
+
+function wireLocateButtons() {
+  content.querySelectorAll("[data-locate-btn]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const pr = btn.getAttribute("data-locate-btn");
+      const target = document.getElementById("captured-" + pr);
+      if (!target) return;
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.add("highlight");
+      setTimeout(() => target.classList.remove("highlight"), 1600);
+    });
+  });
+}
+
+function render(data) {
+  lastData = data;
+  statCaptured.textContent = data.captured.length;
+  statSurfaced.textContent = data.surfaced.length;
+
+  if (view === "inspector") {
+    renderInspectorShell();
+    return;
+  }
+  if (data.events.length === 0) {
+    content.innerHTML = `<div class="empty">No memories or surfaced comments found for <strong>${esc(data.containerTag)}</strong> yet.</div>`;
+    return;
+  }
+
+  if (view === "grouped") renderGrouped(data);
+  else renderChrono(data);
+}
+
+function renderInspectorShell() {
+  const savedPr = localStorage.getItem("precedent-dashboard-pr") || "";
+  content.innerHTML = `
+    <div class="inspector">
+      <div class="inspect-form">
+        <input id="inspectPr" type="number" min="1" step="1" placeholder="Pull request number" value="${esc(savedPr)}" />
+        <button id="inspectBtn">Inspect Supermemory retrieval</button>
+      </div>
+      <div id="inspectResults" class="empty">Enter a PR number to run the same read-only retrieval path used by the bot.</div>
+    </div>`;
+  const input = $("#inspectPr");
+  const button = $("#inspectBtn");
+  button.addEventListener("click", runInspection);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") runInspection(); });
+}
+
+function renderInspection(result) {
+  const top = result.candidates[0];
+  const title = result.decision === "surface" ? "Would surface" : "Stayed silent";
+  let reason;
+  const reasonText = {
+    confident_match: "The best valid memory cleared the calibrated threshold and ambiguity gate.",
+    below_threshold: "The best valid memory did not clear the calibrated posting threshold.",
+    ambiguous: "The two strongest memories were too close to choose safely.",
+    no_text_patches: "No text patches were available to search.",
+    no_valid_queries: "All changed files were excluded or contained no meaningful code hunks.",
+    all_searches_failed: "Every Supermemory hunk search failed, so the system failed closed.",
+    no_candidates: "Supermemory returned no repository memories for these changes.",
+    invalid_memory: "Results were returned, but none had safe content and provenance.",
+  };
+  reason = reasonText[result.reason] || (top ? `Top score: ${Number(top.score).toFixed(4)}.` : "No candidate was selected.");
+
+  const candidates = result.candidates.map((candidate, i) => `
+    <div class="candidate">
+      <div class="candidate-head"><span class="rank">#${candidate.rank || i + 1}</span><span class="path">${esc(candidate.triggeringHunk || candidate.triggeredBy)}</span><span class="score">${Number(candidate.score).toFixed(4)}</span></div>
+      ${candidate.triggeringExcerpt ? `<pre>${esc(candidate.triggeringExcerpt)}</pre>` : ""}
+      <div class="excerpt">${esc(candidate.summary)}</div>
+      <div class="rel"><span>memory</span><span class="arrow">→</span><a href="${esc(candidate.sourceUrl)}" target="_blank" rel="noopener">PR #${candidate.sourcePrNumber}</a><span class="file">${esc(candidate.storedFilePath)}</span><span class="ts">${esc(candidate.documentId)}</span></div>
+      <details class="query-evidence"><summary>Why this matched · ${candidate.evidence?.length || 1} supporting hunk${candidate.evidence?.length === 1 ? "" : "s"}</summary><pre>${esc(candidate.query || "Query evidence unavailable")}</pre></details>
+    </div>`).join("");
+  const failures = result.failures.length
+    ? `<div class="warning">${result.failures.length} file search${result.failures.length === 1 ? "" : "es"} failed; remaining results are shown. ${esc(result.failures.map((f) => f.filename).join(", "))}</div>`
+    : "";
+  const skips = result.skips?.length
+    ? `<div class="skip-list"><strong>Skipped safely:</strong> ${result.skips.map((item) => `${esc(item.filename)} (${esc(item.reason)})`).join(", ")}</div>`
+    : "";
+
+  $("#inspectResults").outerHTML = `
+    <div id="inspectResults" class="inspector">
+      <div class="pipeline">
+        <div>Capture scope<strong>${esc(result.containerTag)}</strong></div>
+        <div>Hunk queries<strong>${result.checkedQueries ?? result.checkedFiles}</strong></div>
+        <div>Retrieval profile<strong>${esc(result.profile?.id || "legacy")}</strong></div>
+        <div>Threshold / time<strong>${Number(result.threshold).toFixed(4)} · ${result.timingMs ?? "?"}ms</strong></div>
+      </div>
+      <div class="decision ${result.decision}"><div class="decision-title">${title}</div><div class="decision-meta">${esc(result.reason || result.decision)} — ${esc(reason)}</div></div>
+      ${failures}
+      ${skips}
+      ${candidates || `<div class="empty">No ranked memories to display.</div>`}
+    </div>`;
+}
+
+async function runInspection() {
+  const value = repoInput.value.trim();
+  const [owner, repo] = value.split("/");
+  const pullNumber = Number($("#inspectPr").value);
+  const button = $("#inspectBtn");
+  const target = $("#inspectResults");
+  if (!owner || !repo || !Number.isInteger(pullNumber) || pullNumber <= 0) {
+    target.className = "error";
+    target.textContent = "Enter an owner/repo above and a positive PR number.";
+    return;
+  }
+  localStorage.setItem("precedent-dashboard-pr", String(pullNumber));
+  button.disabled = true;
+  target.className = "loading";
+  target.textContent = "Running live Supermemory retrieval…";
+  try {
+    const res = await fetch(`/dashboard/api/inspect?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&pullNumber=${pullNumber}`);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${res.status}`);
+    }
+    renderInspection(await res.json());
+  } catch (err) {
+    target.className = "error";
+    target.textContent = err.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function setView(next) {
+  view = next;
+  localStorage.setItem("precedent-dashboard-view", view);
+  tabGrouped.classList.toggle("active", view === "grouped");
+  tabChrono.classList.toggle("active", view === "chrono");
+  tabInspector.classList.toggle("active", view === "inspector");
+  if (lastData) render(lastData);
+}
+
+tabGrouped.addEventListener("click", () => setView("grouped"));
+tabChrono.addEventListener("click", () => setView("chrono"));
+tabInspector.addEventListener("click", () => setView("inspector"));
+setView(view);
+
+async function load() {
+  const value = repoInput.value.trim();
+  const [owner, repo] = value.split("/");
+  if (!owner || !repo) {
+    content.innerHTML = `<div class="error">Enter a repo as owner/repo</div>`;
+    return;
+  }
+  localStorage.setItem("precedent-dashboard-repo", value);
+  loadBtn.disabled = true;
+  content.innerHTML = `<div class="loading">Loading live data…</div>`;
+  try {
+    const res = await fetch(`/dashboard/api/data?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}`);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${res.status}`);
+    }
+    render(await res.json());
+  } catch (err) {
+    statCaptured.textContent = "–";
+    statSurfaced.textContent = "–";
+    content.innerHTML = `<div class="error">${esc(err.message)}</div>`;
+  } finally {
+    loadBtn.disabled = false;
+  }
+}
+
+loadBtn.addEventListener("click", load);
+repoInput.addEventListener("keydown", (e) => { if (e.key === "Enter") load(); });
+
+repoInput.value = localStorage.getItem("precedent-dashboard-repo") || "";
+if (repoInput.value) load();
+</script>
+</body>
+</html>
