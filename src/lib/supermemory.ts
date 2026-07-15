@@ -20,3 +20,21 @@ export function searchDocuments(params: Parameters<typeof supermemory.search.doc
 export function getProfile(params: Parameters<typeof supermemory.profile>[0]) {
   return supermemory.profile(params);
 }
+
+type DocumentListParams = Parameters<typeof supermemory.documents.list>[0];
+type DocumentListMemory = Awaited<ReturnType<typeof supermemory.documents.list>>["memories"][number];
+
+// The SDK exposes page-based listing rather than an async paginator. Keep the loop
+// here so ingestion and the dashboard cannot silently operate on only the first page.
+export async function listAllDocuments(params: Omit<DocumentListParams, "page" | "limit"> = {}): Promise<DocumentListMemory[]> {
+  const memories: DocumentListMemory[] = [];
+  const limit = 100;
+  let page = 1;
+
+  while (true) {
+    const response = await supermemory.documents.list({ ...params, page, limit });
+    memories.push(...response.memories);
+    if (page >= response.pagination.totalPages) return memories;
+    page++;
+  }
+}

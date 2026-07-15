@@ -16,7 +16,11 @@
     "smoke:github": "tsx scripts/smoke-test-github.ts",
     "smoke:supermemory": "tsx scripts/smoke-test-supermemory.ts",
     "spike:matching": "tsx scripts/phase1-matching-spike.ts",
-    "replay": "tsx scripts/replay-webhook.ts"
+    "replay": "tsx scripts/replay-webhook.ts",
+    "demo:reset": "tsx scripts/demo-reset.ts",
+    "memories:list": "tsx scripts/list-memories.ts",
+    "backfill:threads": "tsx scripts/backfill-resolved-threads.ts",
+    "accuracy:benchmark": "tsx scripts/accuracy-benchmark.ts"
   },
   "repository": {
     "type": "git",

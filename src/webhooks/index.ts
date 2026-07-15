@@ -7,7 +7,7 @@ export const webhooks = new Webhooks({
   secret: config.github.webhookSecret,
 });
 
-webhooks.on("pull_request.closed", async ({ payload }) => {
+webhooks.on("pull_request.closed", async ({ id, payload }) => {
   const { repository, pull_request: pr } = payload;
   const label = `${repository.full_name}#${pr.number}`;
 
@@ -26,10 +26,10 @@ webhooks.on("pull_request.closed", async ({ payload }) => {
     return;
   }
 
-  await ingestPullRequest({ owner, repo, pullNumber: pr.number, mergedAt: pr.merged_at });
+  await ingestPullRequest({ owner, repo, pullNumber: pr.number, mergedAt: pr.merged_at, deliveryId: id });
 });
 
-webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ payload }) => {
+webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ id, payload }) => {
   const { repository, pull_request: pr } = payload;
   const label = `${repository.full_name}#${pr.number}`;
 
@@ -40,7 +40,7 @@ webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ payloa
   }
 
   console.log(`[webhooks] ${label} ${payload.action} — checking for precedent`);
-  await surfacePullRequest({ owner, repo, pullNumber: pr.number });
+  await surfacePullRequest({ owner, repo, pullNumber: pr.number, deliveryId: id });
 });
 
 webhooks.onError((error) => {
