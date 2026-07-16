@@ -6,6 +6,7 @@ import { supermemory } from "./lib/supermemory.js";
 import { webhookMiddleware } from "./webhooks/index.js";
 import { feedbackExport, getDashboardData } from "./dashboard/index.js";
 import { inspectPullRequestRetrieval } from "./surfacing/retrieval.js";
+import { mountLanding } from "./landing.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -98,9 +99,11 @@ async function main() {
     }
   });
   app.use("/dashboard", express.static(path.join(__dirname, "../public/dashboard")));
+  mountLanding(app);
 
   app.listen(config.port, () => {
     console.log(`[startup] Precedent webhook receiver listening on :${config.port}`);
+    console.log(`[startup] Landing page available at http://localhost:${config.port}/`);
     console.log(`[startup] Dashboard available at http://localhost:${config.port}/dashboard`);
   });
 }
