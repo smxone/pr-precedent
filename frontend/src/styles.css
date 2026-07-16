@@ -1792,6 +1792,70 @@ code {
 .gate-row { justify-content: flex-start; gap: 9px; border: 0; background: rgba(89, 235, 163, 0.06); color: #8fb8a3; }
 .gate-row svg { color: var(--green); }
 
+.evolution-panel {
+  display: grid;
+  grid-template-columns: 0.78fr 1.22fr;
+  gap: 58px;
+  align-items: start;
+  margin-top: 18px;
+  padding: 38px;
+  border: 1px solid #243137;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(90deg, rgba(89, 235, 163, 0.06), transparent 34%),
+    #0a0f11;
+}
+
+.evolution-copy h3 {
+  max-width: 520px;
+  margin: 16px 0 17px;
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 500;
+  line-height: 1.04;
+}
+
+.evolution-copy p {
+  max-width: 610px;
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.evolution-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.evolution-item {
+  display: grid;
+  min-height: 214px;
+  align-content: start;
+  gap: 13px;
+  padding: 18px;
+  border: 1px solid #26333a;
+  border-radius: 12px;
+  background: rgba(16, 23, 26, 0.72);
+}
+
+.evolution-item svg {
+  color: var(--green);
+}
+
+.evolution-item strong {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 570;
+  line-height: 1.35;
+}
+
+.evolution-item span {
+  color: var(--text-faint);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
 .integration {
   padding-top: 150px;
   padding-bottom: 180px;
@@ -2066,6 +2130,7 @@ code {
   .capability-card { min-height: 290px; }
   .capability-top { margin-bottom: 45px; }
   .quality-panel { grid-template-columns: 1fr; gap: 45px; }
+  .evolution-panel { grid-template-columns: 1fr; gap: 32px; }
   .integration-layout { grid-template-columns: 1fr; gap: 60px; }
 }
 
@@ -2155,6 +2220,9 @@ code {
   .capability-card h3 { font-size: 28px; }
   .quality-panel { margin-top: 70px; padding: 25px 20px; border-radius: 17px; }
   .benchmark-head, .metric-row, .gate-row { padding-inline: 12px; font-size: 8px; }
+  .evolution-panel { padding: 24px 18px; border-radius: 17px; }
+  .evolution-grid { grid-template-columns: 1fr; }
+  .evolution-item { min-height: 0; }
   .integration { padding-top: 100px; padding-bottom: 110px; }
   .integration-layout { margin-top: 55px; }
   .terminal-body { min-height: 330px; padding: 25px 18px; }

@@ -634,6 +634,31 @@ function SupermemorySection() {
           <div className="gate-row"><ShieldCheck size={18} /><span>Automatic comments locked until promotion passes</span></div>
         </div>
       </Reveal>
+
+      <Reveal className="evolution-panel">
+        <div className="evolution-copy">
+          <div className="section-kicker">Designed to improve with the codebase</div>
+          <h3>Team feedback can keep repository memory current.</h3>
+          <p>As teams scale Precedent across larger repositories, surfaced comments can become a feedback channel: useful matches reinforce the memory, outdated guidance can be retired, and retrieval profiles can be evaluated before they change GitHub behavior.</p>
+        </div>
+        <div className="evolution-grid" aria-label="Future precision loop">
+          <div className="evolution-item">
+            <CheckCircle2 size={17} />
+            <strong>Signal from maintainers</strong>
+            <span>Mark a surfaced precedent as useful, outdated, or replaced by a newer convention.</span>
+          </div>
+          <div className="evolution-item">
+            <CheckCircle2 size={17} />
+            <strong>Cleaner semantic input</strong>
+            <span>Normalize noisy diff fragments so retrieval focuses on meaningful code changes.</span>
+          </div>
+          <div className="evolution-item">
+            <CheckCircle2 size={17} />
+            <strong>Benchmarked rollout</strong>
+            <span>Test new retrieval profiles against repository cases before changing automatic comments.</span>
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }
