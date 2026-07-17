@@ -32,14 +32,14 @@ describe("resolved-thread ingestion", () => {
     mocks.addMemory.mockResolvedValue({ id: "memory" });
   });
 
-  it("stores one schema-v2 document per resolved thread with stable identity", async () => {
+  it("stores one document per resolved thread with stable identity", async () => {
     const { ingestPullRequest } = await import("../src/ingestion/index.js");
     const result = await ingestPullRequest({ owner: "acme", repo: "api", pullNumber: 1, mergedAt: "2026-07-15T00:00:00Z" });
     expect(result).toEqual({ ingested: 1, eligible: 1, total: 1, dryRun: false });
     expect(mocks.addMemory).toHaveBeenCalledWith(expect.objectContaining({
       customId: "github-review-thread-one",
       entityContext: expect.stringContaining("durable technical guidance"),
-      metadata: expect.objectContaining({ schemaVersion: 2, recordKind: "review-thread", threadId: "one" }),
+      metadata: expect.objectContaining({ recordKind: "review-thread", threadId: "one" }),
     }));
     const content = mocks.addMemory.mock.calls[0][0].content;
     expect(content).toContain("[Discussion]: Review comment:");

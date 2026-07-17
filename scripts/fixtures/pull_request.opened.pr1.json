@@ -1,0 +1,16 @@
+{
+  "action": "opened",
+  "number": 1,
+  "pull_request": {
+    "number": 1,
+    "title": "feat: implement core data models and utility scripts",
+    "html_url": "https://github.com/smxone/reviseflow-ai/pull/1"
+  },
+  "repository": {
+    "full_name": "smxone/reviseflow-ai",
+    "name": "reviseflow-ai",
+    "owner": {
+      "login": "smxone"
+    }
+  }
+}

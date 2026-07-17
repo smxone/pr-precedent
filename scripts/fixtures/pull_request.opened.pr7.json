@@ -1,0 +1,14 @@
+{
+  "action": "opened",
+  "number": 7,
+  "pull_request": {
+    "number": 7,
+    "title": "feat: add concept lookup endpoint",
+    "html_url": "https://github.com/smxone/reviseflow-ai/pull/7"
+  },
+  "repository": {
+    "full_name": "smxone/reviseflow-ai",
+    "name": "reviseflow-ai",
+    "owner": { "login": "smxone" }
+  }
+}

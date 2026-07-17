@@ -7,7 +7,6 @@ export interface DecisionMemoryMetadata {
   decisionType: DecisionType;
   resolvedAt: string;
   sourceUrl: string;
-  schemaVersion?: number;
   recordKind?: "review-comment" | "review-thread";
   threadId?: string;
   isResolved?: boolean;
@@ -34,13 +33,12 @@ export interface ResolvedReviewThread {
   comments: ResolvedReviewThreadComment[];
 }
 
-export interface DecisionDocumentV2 {
+export interface DecisionDocument {
   customId: string;
   content: string;
   containerTag: string;
   entityContext: string;
   metadata: DecisionMemoryMetadata & {
-    schemaVersion: 2;
     recordKind: "review-thread";
     threadId: string;
     isResolved: true;
@@ -95,7 +93,6 @@ export interface RetrievalProfile {
   rewriteQuery: boolean;
   onlyMatchingChunks: boolean;
   chunkThreshold: number | null;
-  schemaVersion: number | null;
   resultLimit: number;
   ambiguityMargin: number;
 }

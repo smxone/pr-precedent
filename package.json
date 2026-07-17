@@ -8,8 +8,13 @@
     "doc": "docs"
   },
   "scripts": {
+    "postinstall": "npm run install:frontend",
+    "install:frontend": "npm --prefix frontend ci",
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm run build:frontend && npm run build:server",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:server": "tsc",
     "start": "node dist/index.js",
     "cli": "tsx src/cli/index.ts",
     "test": "vitest run",

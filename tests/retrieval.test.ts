@@ -6,7 +6,7 @@ vi.mock("../src/lib/github.js", () => ({
 }));
 vi.mock("../src/lib/config.js", () => ({ config: {
   confidenceThreshold: 0.78,
-  retrieval: { profileId: "test", queryVariant: "normalized-hunk", rerank: false, rewriteQuery: false, onlyMatchingChunks: true, chunkThreshold: null, schemaVersion: 2, resultLimit: 5, ambiguityMargin: 0.02 },
+  retrieval: { profileId: "test", queryVariant: "normalized-hunk", rerank: false, rewriteQuery: false, onlyMatchingChunks: true, chunkThreshold: null, resultLimit: 5, ambiguityMargin: 0.02 },
 } }));
 vi.mock("../src/lib/supermemory.js", () => ({ searchDocuments: mocks.search }));
 
@@ -15,7 +15,7 @@ function result(id: string, score: number, overrides: Record<string, unknown> = 
     documentId: id,
     score,
     content: `[Decision type]: convention\n[Context]: old.ts\n[Discussion]: Keep this technical decision.\n[Outcome]: merged`,
-    metadata: { prNumber: 2, sourceUrl: "https://github.test/pull/2", filePath: "old.ts", schemaVersion: 2 },
+    metadata: { prNumber: 2, sourceUrl: "https://github.test/pull/2", filePath: "old.ts" },
     ...overrides,
   };
 }

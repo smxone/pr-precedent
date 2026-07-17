@@ -64,9 +64,6 @@ export const config = {
     chunkThreshold: process.env["RETRIEVAL_CHUNK_THRESHOLD"]
       ? unitInterval("RETRIEVAL_CHUNK_THRESHOLD", process.env["RETRIEVAL_CHUNK_THRESHOLD"])
       : null,
-    schemaVersion: process.env["RETRIEVAL_SCHEMA_VERSION"]
-      ? positiveInteger("RETRIEVAL_SCHEMA_VERSION", process.env["RETRIEVAL_SCHEMA_VERSION"])
-      : null,
     resultLimit: positiveInteger("RETRIEVAL_RESULT_LIMIT", process.env["RETRIEVAL_RESULT_LIMIT"] ?? "5"),
     ambiguityMargin: unitInterval("RETRIEVAL_AMBIGUITY_MARGIN", process.env["RETRIEVAL_AMBIGUITY_MARGIN"] ?? "0.02"),
   },

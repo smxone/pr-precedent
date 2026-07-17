@@ -6,9 +6,6 @@ export const supermemory = new Supermemory({
   baseURL: config.supermemory.baseUrl,
 });
 
-// Verified against node_modules/supermemory@4.24.12: add() and profile() are
-// top-level client methods, NOT client.memories.add() — client.memories only
-// exposes forget()/updateMemory(). See docs/DATA_MODEL.md.
 export function addMemory(params: Parameters<typeof supermemory.add>[0]) {
   return supermemory.add(params);
 }

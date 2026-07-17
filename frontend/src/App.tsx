@@ -315,7 +315,7 @@ function CaptureView() {
         <div className="capture-arrow" aria-hidden="true"><span /><ArrowRight /></div>
 
         <div className="capture-panel capture-panel--memory">
-          <div className="capture-panel-head"><Database size={15} /><span>Contextual memory</span><b>schema v2</b></div>
+          <div className="capture-panel-head"><Database size={15} /><span>Contextual memory</span><b>resolved thread</b></div>
           <div className="memory-field"><span>container</span><code>northstar_platform</code></div>
           <div className="memory-field"><span>source</span><code>review-thread / PR #184</code></div>
           <div className="memory-field"><span>content</span><p>Original diff + identity-free discussion + resolution outcome</p></div>
@@ -624,7 +624,7 @@ function SupermemorySection() {
         <div className="quality-copy">
           <div className="section-kicker">A retrieval system that earns the right to speak</div>
           <h3>Measured before it comments.</h3>
-          <p>A versioned 25-case benchmark evaluates retrieval profiles. Experimental profiles stay observe-only until the promotion gate passes, and sparse-corpus false positives led to a more conservative relevance threshold.</p>
+          <p>A 25-case benchmark evaluates retrieval profiles. Experimental profiles stay observe-only until the promotion gate passes, and sparse-corpus false positives led to a more conservative relevance threshold.</p>
         </div>
         <div className="benchmark-card">
           <div className="benchmark-head"><span>retrieval-profile / candidate</span><span className="observe-badge">observe only</span></div>

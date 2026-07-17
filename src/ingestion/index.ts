@@ -2,7 +2,7 @@ import { octokit } from "../lib/github.js";
 import { config } from "../lib/config.js";
 import { logEvent } from "../lib/log.js";
 import { addMemory, listAllDocuments } from "../lib/supermemory.js";
-import type { DecisionDocumentV2, DecisionMemoryMetadata, ResolvedReviewThread } from "../types/index.js";
+import type { DecisionDocument, DecisionMemoryMetadata, ResolvedReviewThread } from "../types/index.js";
 import { fetchResolvedReviewThreads } from "./review-threads.js";
 
 interface IngestPullRequestParams {
@@ -77,17 +77,16 @@ function composeDocument(params: {
   prTitle: string;
   thread: ResolvedReviewThread;
   finalContext: { label: string; content: string };
-}): DecisionDocumentV2 {
+}): DecisionDocument {
   const root = params.thread.comments.find((comment) => !comment.isBot && comment.body.trim());
   if (!root) throw new Error(`Resolved thread ${params.thread.id} has no human root comment`);
   const originalDiff = root.diffHunk || "No original diff hunk was returned by GitHub.";
-  const metadata: DecisionDocumentV2["metadata"] = {
+  const metadata: DecisionDocument["metadata"] = {
     prNumber: params.pullNumber,
     filePath: params.thread.path,
     decisionType: "convention",
     resolvedAt: params.mergedAt,
     sourceUrl: root.url,
-    schemaVersion: 2,
     recordKind: "review-thread",
     threadId: params.thread.id,
     isResolved: true,
@@ -99,7 +98,6 @@ function composeDocument(params: {
     entityContext: ENTITY_CONTEXT,
     metadata,
     content: [
-      "[Schema version]: 2",
       "[Record kind]: resolved review thread",
       `[Decision type]: ${metadata.decisionType}`,
       `[File]: ${params.thread.path}`,

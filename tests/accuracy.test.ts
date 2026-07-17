@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("../src/lib/config.js", () => ({ config: {
   confidenceThreshold: 0.78,
-  retrieval: { profileId: "test", queryVariant: "normalized-hunk", rerank: false, rewriteQuery: false, onlyMatchingChunks: true, chunkThreshold: null, schemaVersion: 2, resultLimit: 5, ambiguityMargin: 0.02 },
+  retrieval: { profileId: "test", queryVariant: "normalized-hunk", rerank: false, rewriteQuery: false, onlyMatchingChunks: true, chunkThreshold: null, resultLimit: 5, ambiguityMargin: 0.02 },
 } }));
 vi.mock("../src/lib/github.js", () => ({ octokit: {} }));
 vi.mock("../src/lib/supermemory.js", () => ({ searchDocuments: vi.fn() }));
@@ -11,7 +11,7 @@ import type { RetrievalProfile } from "../src/types/index.js";
 
 const profile: RetrievalProfile = {
   id: "test", queryVariant: "normalized-hunk", rerank: false, rewriteQuery: false,
-  onlyMatchingChunks: true, chunkThreshold: null, schemaVersion: 2, resultLimit: 5, ambiguityMargin: 0.02,
+  onlyMatchingChunks: true, chunkThreshold: null, resultLimit: 5, ambiguityMargin: 0.02,
 };
 
 describe("accuracy foundations", () => {

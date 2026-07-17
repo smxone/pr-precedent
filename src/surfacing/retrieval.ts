@@ -43,7 +43,6 @@ export const productionRetrievalProfile: RetrievalProfile = {
   rewriteQuery: config.retrieval.rewriteQuery,
   onlyMatchingChunks: config.retrieval.onlyMatchingChunks,
   chunkThreshold: config.retrieval.chunkThreshold,
-  schemaVersion: config.retrieval.schemaVersion,
   resultLimit: config.retrieval.resultLimit,
   ambiguityMargin: config.retrieval.ambiguityMargin,
 };
@@ -217,8 +216,6 @@ function candidateFromResult(query: RetrievalQuery, result: {
       typeof metadata?.prNumber !== "number" || metadata.prNumber <= 0 ||
       typeof metadata.sourceUrl !== "string" || !metadata.sourceUrl ||
       typeof metadata.filePath !== "string" || !metadata.filePath) return null;
-  if (profile.schemaVersion !== null && metadata.schemaVersion !== profile.schemaVersion) return null;
-
   const relevantExcerpt = selectCandidateAwareExcerpt(query, summary);
 
   const evidence: RetrievalEvidence = {
@@ -252,18 +249,6 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Unknown search error";
 }
 
-function searchFilters(profile: RetrievalProfile) {
-  if (profile.schemaVersion === null) return undefined;
-  return {
-    AND: [{
-      filterType: "numeric" as const,
-      key: "schemaVersion",
-      value: String(profile.schemaVersion),
-      numericOperator: "=" as const,
-    }],
-  };
-}
-
 export async function inspectChangedFilesRetrieval(params: {
   containerTag: string;
   pullNumber: number;
@@ -294,7 +279,6 @@ export async function inspectChangedFilesRetrieval(params: {
   let invalidCandidateCount = 0;
   for (const query of queries) {
     try {
-      const filters = searchFilters(profile);
       const response = await searchDocuments({
         q: query.text,
         containerTags: [params.containerTag],
@@ -304,7 +288,6 @@ export async function inspectChangedFilesRetrieval(params: {
         rewriteQuery: profile.rewriteQuery,
         onlyMatchingChunks: profile.onlyMatchingChunks,
         ...(profile.chunkThreshold === null ? {} : { chunkThreshold: profile.chunkThreshold }),
-        ...(filters ? { filters } : {}),
       });
       for (const result of response.results) {
         const candidate = candidateFromResult(query, result, profile);
